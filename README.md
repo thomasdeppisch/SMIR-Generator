@@ -1,4 +1,14 @@
-# Spherical Microphone array Impulse Response generator (SMIRgen)
+## Extension of SMIRgen giving access to true reflection directions and corresponding timestamps
+
+When analysing room impulse responses algorithmically it is often desirable to compare estimated directions of arrival (DOAs) of individual reflections to a ground truth (true DOAs from simulation). This fork extends SMIRgen to additionally output the true reflection directions and their corresponding timestamps.
+
+`[ h, H, beta_hat, reflectionDirections, reflectionTimestamps ] = smir_generator(c, procFs, sphLocation, s, L, beta, sphType, sphRadius, mic, N_harm, nsample, K, order, varargin)`
+
+additional output data:  
+* reflectionDirections: _numReflections x 3 matrix containing the directions of direct sound and individual reflections from the perspective of the microphone_  
+* reflectionTimestamps: _numReflections x 1 vector containing time stamps of individual reflections in s_
+
+## Spherical Microphone array Impulse Response generator (SMIRgen)
 
 This repository contains an algorithm to generate impulse responses between a source and a spherical microphone array in a reverberant enclosure.
 
