@@ -157,7 +157,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     double* H_imag = mxGetPi(plhs[0]);
     plhs[1] = mxCreateDoubleMatrix(N_harm+1, M, mxREAL);
     double* shd_angle_l_dependent = mxGetPr(plhs[1]);
-    
+    // also output receiver->image vector
+    plhs[2] = mxCreateDoubleMatrix(nsamples, 3, mxREAL);
+    double* recToImageDirection = mxGetPr(plhs[2]);
+    int reflectionCounter = 0;
+
     // Temporary variables and constants (image-method)
     const double cTs = c/fs;
     double*      r = new double[3];
@@ -171,10 +175,10 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
     int          mx, my, mz;
     int          length = 3;
     
-    s[0] = ss[0]/cTs; s[1] = ss[1]/cTs; s[2] = ss[2]/cTs;
-    L[0] = LL[0]/cTs; L[1] = LL[1]/cTs; L[2] = LL[2]/cTs;
+    s[0] = ss[0]/cTs; s[1] = ss[1]/cTs; s[2] = ss[2]/cTs; // source
+    L[0] = LL[0]/cTs; L[1] = LL[1]/cTs; L[2] = LL[2]/cTs; // room dimensions
     
-    r[0] = rr[0] / cTs;
+    r[0] = rr[0] / cTs; // receiver
     r[1] = rr[1] / cTs;
     r[2] = rr[2] / cTs;
     
@@ -208,7 +212,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                             hu[5] = (1-2*k)*s[2] - r[2] + hu[2];
                             
                             dist = sqrt(pow(hu[3], 2) + pow(hu[4], 2) + pow(hu[5], 2)); // = norm(Rp+Rm)/cTs
-                            double R_p_plus_R_m[3] = {hu[3]*cTs,hu[4]*cTs,hu[5]*cTs};
+                            double R_p_plus_R_m[3] = {hu[3]*cTs,hu[4]*cTs,hu[5]*cTs}; // vector from array center to image
                             double R_p_plus_R_m_norm = dist*cTs;
                             
                             if (abs(2*mx-q)+abs(2*my-j)+abs(2*mz-k) <= order || order == -1)
@@ -216,6 +220,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
                                 fdist = (int) floor(dist+(sphRadius/cTs));
                                 if (fdist < nsamples)
                                 {
+                                    // save image to receiver vector before normalization, to be able to calculate image distance from it
+                                    recToImageDirection[reflectionCounter] = R_p_plus_R_m[0];
+                                    recToImageDirection[reflectionCounter + nsamples] = R_p_plus_R_m[1];
+                                    recToImageDirection[reflectionCounter + 2 * nsamples] = R_p_plus_R_m[2];
+                                    reflectionCounter++;
+
                                     normalize(R_p_plus_R_m, length);
                                     for (int jj=0; jj<6; jj++){ 
                                         // Calculate angles with the walls

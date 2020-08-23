@@ -1,4 +1,4 @@
-function [ h, H, beta_hat ] = smir_generator(c, procFs, sphLocation, s, L, beta, sphType, sphRadius, mic, N_harm, nsample, K, order, varargin)
+function [ h, H, beta_hat, reflectionDirections, reflectionTimestamps ] = smir_generator(c, procFs, sphLocation, s, L, beta, sphType, sphRadius, mic, N_harm, nsample, K, order, varargin)
 
 % function [ h, H, beta_hat ] = smir_generator(c, procFs, sphLocation, s, L, beta, sphType,
 %                               sphRadius, mic, N_harm, nsample, K, order, refl_coeff_ang_dep,
@@ -37,6 +37,11 @@ function [ h, H, beta_hat ] = smir_generator(c, procFs, sphLocation, s, L, beta,
 %     H                     M x K*nsample/2+1 matrix containing the calculated RTF(s)
 %     beta_hat              If beta is the reverberation time, the calculated
 %                           reflection coefficient is returned.
+%     reflectionDirections  numReflections x 3 matrix containing the
+%                           directions of direct sound and individual 
+%                           reflections from the perspective of the microphone
+%     reflectionTimestamps  numReflections x 1 vector containing time
+%                           stamps of individual reflections in s
 %
 % References:
 %     - D. P. Jarrett, E. A. P. Habets, M. R. P. Thomas, P. A. Naylor,
@@ -261,7 +266,7 @@ end
 shd_k_l_dependent_all_sources = 1i * farfield_mode_strength.' .* repmat(k.',1,N_harm+1);
 shd_angle_l_dependent_all_sources = (2*order_l+1);
 
-[H] = smir_generator_loop(c, procFs, sphLocation, s, L, beta, nsample, order, K, shd_k_l_dependent_all_sources, shd_angle_l_dependent_all_sources, mic_pos, sphRadius, k, refl_coeff_ang_dep, src_ang, src_type);
+[H, ~, rec2imageDirection] = smir_generator_loop(c, procFs, sphLocation, s, L, beta, nsample, order, K, shd_k_l_dependent_all_sources, shd_angle_l_dependent_all_sources, mic_pos, sphRadius, k, refl_coeff_ang_dep, src_ang, src_type);
 
 H(isnan(H)) = 0;
 
@@ -280,3 +285,15 @@ if HP==1
     [b,a] = butter(4,50/(procFs/2),'high'); % Cut-off freq is 50 Hz
     h = filter(b,a,h,[],2);
 end
+
+% cut reflection directions and calculate reflection timestamps
+reflectionDistances = sqrt(sum(rec2imageDirection.^2, 2));
+reflectionDirections = rec2imageDirection(reflectionDistances > eps, :);
+reflectionDistances = reflectionDistances(reflectionDistances > eps);
+reflectionDirections = reflectionDirections ./ reflectionDistances; % normalize
+reflectionTimestamps = reflectionDistances ./ c;
+
+% sort by timestamp
+[reflectionTimestamps, sortIdx] = sort(reflectionTimestamps, 'ascend');
+reflectionDirections = reflectionDirections(sortIdx, :);
+
