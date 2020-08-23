@@ -38,10 +38,10 @@ function [ h, H, beta_hat, reflectionDirections, reflectionTimestamps ] = smir_g
 %     beta_hat              If beta is the reverberation time, the calculated
 %                           reflection coefficient is returned.
 %     reflectionDirections  numReflections x 3 matrix containing the
-%                           directions of direct sound and individual 
-%                           reflections from the perspective of the microphone
-%     reflectionTimestamps  numReflections x 1 vector containing time
-%                           stamps of individual reflections in s
+%                           directions (in Cartesian coordinates) of direct 
+%                           sound and individual reflections
+%     reflectionTimestamps  numReflections x 1 vector containing timestamps
+%                           of individual reflections in s
 %
 % References:
 %     - D. P. Jarrett, E. A. P. Habets, M. R. P. Thomas, P. A. Naylor,

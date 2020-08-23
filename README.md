@@ -5,7 +5,7 @@ When analysing room impulse responses algorithmically it is often desirable to c
 `[ h, H, beta_hat, reflectionDirections, reflectionTimestamps ] = smir_generator(c, procFs, sphLocation, s, L, beta, sphType, sphRadius, mic, N_harm, nsample, K, order, varargin)`
 
 additional output data:  
-* reflectionDirections: _numReflections x 3 matrix containing the directions of direct sound and individual reflections from the perspective of the microphone_  
+* reflectionDirections: _numReflections x 3 matrix containing the directions (in Cartesian coordinates) of direct sound and individual reflections_  
 * reflectionTimestamps: _numReflections x 1 vector containing time stamps of individual reflections in s_
 
 ## Spherical Microphone array Impulse Response generator (SMIRgen)
